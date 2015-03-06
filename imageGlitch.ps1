@@ -33,13 +33,31 @@ while($true){
     Write-Host The reccommended offset multiplier is $recOffset
     [int]$magicNum = Read-Host Enter the byte size of offset multiplier
 
+    Write-Host
+    $progressive = Read-Host Top to bottom progression or random throughout image: y or n
+
+    if($progressive -eq "y"){
+        $magicNums = [array]::CreateInstance('Double', $runs)
+        For($i=1; $i -lt $runs; $i++){
+            $offset = $offset + $magicNum
+            $magicNums[$i] = $offset
+        }
+        $randomMagicNums = $magicNums | Get-Random -Count $magicNums.Count
+    }
+
     $byteValues = "0x33","0x32","0x50","142","65","110","210","28","85","198","175","129"
     $byteCounter = 1
     $altWrite = 1
     $fileMod = 1
     For ($i=1; $i -lt $runs; $i++)  {
-        $editBytes = $bytes
-        $editBytes[$offset] = $byteValues[$byteCounter]
+        if($progressive -eq "y"){
+            $editBytes = $bytes
+            $editBytes[$randomMagicNums[$i]] = $byteValues[$byteCounter]
+            Write-Host $randomMagicNums[$i]
+        } else {
+            $editBytes = $bytes
+            $editBytes[$offset] = $byteValues[$byteCounter]
+        }
         if(($runs -gt 2000) -and ($altWrite15 -eq 15)){
             [System.IO.File]::WriteAllBytes(".\run" + $folderCount + "\" + $fileMod + $fileName, $bytes)
             $fileMod++
